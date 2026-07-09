@@ -227,9 +227,4 @@ ai-packet-analyzer/
 - [ ] STIX/TAXII threat intel feed connector
 - [ ] Kubernetes Helm chart
 
----
 
-## License
-
-MIT — see [LICENSE](LICENSE)
-"# AI-Packet-Analyzer" 
