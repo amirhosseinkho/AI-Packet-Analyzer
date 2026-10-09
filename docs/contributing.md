@@ -3,8 +3,8 @@
 ## Development Setup
 
 ```bash
-git clone https://github.com/your-username/ai-packet-analyzer.git
-cd ai-packet-analyzer
+git clone https://github.com/amirhosseinkho/AI-Packet-Analyzer.git
+cd AI-Packet-Analyzer
 cp .env.example .env
 make install
 make docker-up   # Start PostgreSQL

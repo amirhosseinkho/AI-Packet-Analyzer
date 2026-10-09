@@ -2,19 +2,11 @@
 
 > A Wireshark-inspired, AI-powered network traffic analyzer that captures packets, aggregates flows, detects anomalies with ML models, and explains network behavior in plain English using LLMs.
 
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
 ![React](https://img.shields.io/badge/React-18-61DAFB)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.5-red)
-
----
-
-## Screenshots
-
-| Live Packets | Anomalies | AI Insights |
-|---|---|---|
-| *(screenshot placeholder)* | *(screenshot placeholder)* | *(screenshot placeholder)* |
 
 ---
 
@@ -105,8 +97,8 @@ graph TB
 ### 1. Clone
 
 ```bash
-git clone https://github.com/your-username/ai-packet-analyzer.git
-cd ai-packet-analyzer
+git clone https://github.com/amirhosseinkho/AI-Packet-Analyzer.git
+cd AI-Packet-Analyzer
 ```
 
 ### 2. Configure
