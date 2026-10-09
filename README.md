@@ -84,6 +84,12 @@ graph TB
 
 ---
 
+## Research
+
+[`research/`](research/README.md) evaluates the shipped detectors and LLM explanations on CIC-IDS2017 and UNSW-NB15 with temporal, benign-only training: detection quality against One-Class SVM, LOF, and a z-score baseline (ROC-AUC, PR-AUC, recall at 1% FPR, per attack type, 5 seeds), and whether the features the LLM cites match the detector's actual attributions (SHAP and autoencoder reconstruction error), including how often it cites information it was never given.
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -203,6 +209,7 @@ ai-packet-analyzer/
 │       └── types/            # TypeScript interfaces
 ├── docker/
 │   └── docker-compose.yml
+├── research/                 # Reproducible evaluation (see research/README.md)
 ├── docs/
 └── .github/workflows/ci.yml
 ```

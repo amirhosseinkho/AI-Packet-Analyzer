@@ -1,0 +1,4 @@
+# On top of backend/requirements.txt (the detectors and LLM providers are imported from backend/app).
+-r ../backend/requirements.txt
+shap>=0.46
+tabulate>=0.9

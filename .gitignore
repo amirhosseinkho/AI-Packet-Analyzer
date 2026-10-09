@@ -52,3 +52,6 @@ frontend/.env.local
 # Database
 test.db
 *.sqlite
+
+# Research datasets (downloaded by hand; see research/scripts/prepare_data.py)
+research/data/
