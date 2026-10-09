@@ -161,7 +161,21 @@ Findings:
 - **Detection depends strongly on the attack type.** On CIC, volumetric attacks are found (DoS Hulk recall 0.66 and DDoS 0.54 for the AE; Heartbleed 1.0 for all models), while brute force, web attacks and slow DoS stay near zero recall at 1% FPR. Flow statistics alone do not separate them from normal traffic.
 - **No model transfers across datasets.** Trained on CIC and tested on UNSW, every model is at or below chance (ROC-AUC 0.44–0.54), so a detector must be retrained on the network where it is deployed.
 
-RQ2 (explanation faithfulness, local Qwen2.5-1.5B-Instruct on GPU) is running; its results will be added from `results/*faithfulness*`.
+## Results (RQ2, run 2026-10-09)
+
+134 flows that the deployed ensemble flags on the CIC-IDS2017 test days (10 per attack type where available, plus 20 benign false positives) were explained by **Qwen2.5-1.5B-Instruct** running locally on a GPU (greedy decoding), using the app's own prompt (`deployed`) and the same prompt plus the ensemble's top-3 SHAP features (`grounded`). Precision and recall@3 compare the features each explanation names with each reference's top 3. Chance precision is 3/13 = 0.231. Per-explanation data, including every generated text: [`results/20261009_faithfulness_cic_hf-Qwen_Qwen2.5-1.5B-Instruct/`](results/20261009_faithfulness_cic_hf-Qwen_Qwen2.5-1.5B-Instruct/).
+
+| condition   |   n |   no_feature_named |   hallucination_rate |   ae_error_precision |   ae_error_recall@k |   if_shap_precision |   if_shap_recall@k |   ensemble_shap_precision |   ensemble_shap_recall@k |
+|:------------|----:|-------------------:|---------------------:|---------------------:|--------------------:|--------------------:|-------------------:|--------------------------:|-------------------------:|
+| deployed    | 134 |                  0 |                0.015 |                0.213 |               0.505 |               0.337 |              0.769 |                     0.33  |                    0.756 |
+| grounded    | 134 |                  0 |                0.03  |                0.195 |               0.306 |               0.426 |              0.627 |                     0.427 |                    0.627 |
+
+Findings:
+
+- **The deployed explanations restate the input rather than explain the decision.** They name 7.0 of the 13 features on average, so recall@3 is high (0.51–0.77), but precision against the autoencoder's actual drivers (0.213) is at chance, and only modestly above chance against the SHAP references (0.33).
+- **Grounding makes the explanations shorter and closer to what they were given, not to the model's full reasoning.** With the SHAP features in the prompt, explanations name 4.75 features, and precision against SHAP rises to 0.43. Agreement with the autoencoder does not improve (0.195), because the ensemble's score is driven almost entirely by the Isolation Forest (see RQ1).
+- **Invented inputs are rare.** Only 1.5% (`deployed`) and 3.0% (`grounded`) of explanations rely on information the LLM was not given (payload, HTTP fields, timing, other flows).
+- **Misread values are common, but they are not counted.** Reading the generated texts shows the model sometimes contradicts the data it was given. For example, it describes a flow from 192.168.10.50 to 172.16.0.1, both private addresses, as a transfer "to an external IP address". The lexicon measures which features are cited, not whether claims about their values are correct. Checking values automatically is the next step.
 
 ## Threats to validity
 

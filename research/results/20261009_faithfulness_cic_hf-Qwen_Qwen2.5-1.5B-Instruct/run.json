@@ -1,0 +1,75 @@
+{
+  "started_utc": "2026-10-09T19:56:17.425251+00:00",
+  "args": {
+    "setting": "cic",
+    "synthetic": false,
+    "provider": "hf",
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "temperature": 0.0,
+    "conditions": [
+      "deployed",
+      "grounded"
+    ],
+    "per_attack": 10,
+    "benign_fp": 20,
+    "k": 3,
+    "seed": 0,
+    "n_train": 20000,
+    "ae_epochs": 50,
+    "kernel_nsamples": 500,
+    "out": null
+  },
+  "split": {
+    "dataset": "CIC-IDS2017",
+    "features": [
+      "packet_count",
+      "byte_count",
+      "avg_packet_size",
+      "duration_seconds",
+      "packets_per_second",
+      "bytes_per_second",
+      "tcp_syn_count",
+      "tcp_fin_count",
+      "tcp_rst_count",
+      "tcp_ack_count",
+      "tcp_psh_count",
+      "src_port",
+      "dst_port"
+    ],
+    "n_train": 20000,
+    "n_val": 20000,
+    "n_test": 144193,
+    "test_attack_counts": {
+      "BENIGN": 100000,
+      "FTP-Patator": 5000,
+      "SSH-Patator": 5000,
+      "DoS slowloris": 5000,
+      "DoS Slowhttptest": 5000,
+      "DoS Hulk": 5000,
+      "DoS GoldenEye": 5000,
+      "PortScan": 5000,
+      "DDoS": 5000,
+      "Bot": 1966,
+      "Web Attack Brute Force": 1507,
+      "Web Attack XSS": 652,
+      "Infiltration": 36,
+      "Web Attack Sql Injection": 21,
+      "Heartbleed": 11
+    },
+    "train_time_range": [
+      "2017-07-03 11:56:59",
+      "2017-07-03 18:12:36"
+    ],
+    "val_time_range": [
+      "2017-07-03 18:12:38",
+      "2017-07-03 20:01:34"
+    ],
+    "test_time_range": [
+      "2017-07-04 11:54:00",
+      "2017-07-07 20:02:00"
+    ]
+  },
+  "llm": "huggingface:Qwen/Qwen2.5-1.5B-Instruct",
+  "llm_device": "cuda",
+  "system_prompt": "You are a senior network security analyst AI assistant.\nGiven network flow statistics and anomaly detection results, provide a concise,\nhuman-readable explanation of the traffic behavior.\n\nFocus on:\n- What type of traffic this likely represents\n- Whether any security concern exists\n- Actionable recommendations if anomalous\n\nRespond in 1-3 sentences. Be specific and technical but understandable.\nDo NOT include JSON or code in your response."
+}
