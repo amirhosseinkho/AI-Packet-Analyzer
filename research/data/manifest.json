@@ -1,0 +1,38 @@
+{
+  "cic-ids2017/Monday-WorkingHours.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Monday-WorkingHours.pcap_ISCX.csv.parquet",
+    "sha256": "dfdcef4b8670e52af54dc4f82174834365a393473e877174cca46d17b12dfd02"
+  },
+  "cic-ids2017/Tuesday-WorkingHours.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Tuesday-WorkingHours.pcap_ISCX.csv.parquet",
+    "sha256": "27e83d518cb093faefd0f883cb4df3ad8b353f150934004f28d0e7962f9f31c4"
+  },
+  "cic-ids2017/Wednesday-workingHours.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Wednesday-workingHours.pcap_ISCX.csv.parquet",
+    "sha256": "d23a259820b16e1ad54f9f3b58d5727c5032d383015f90bc7c07cebbdf8a7140"
+  },
+  "cic-ids2017/Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv.parquet",
+    "sha256": "d8110c04a7af91124ada1c5ad901c4210879df1af8882dc637767532e7165350"
+  },
+  "cic-ids2017/Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv.parquet",
+    "sha256": "5da010354f0fc1040fd1fe65967096e1063475de8dd30ae4f657c07201d728a7"
+  },
+  "cic-ids2017/Friday-WorkingHours-Morning.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Friday-WorkingHours-Morning.pcap_ISCX.csv.parquet",
+    "sha256": "2c00236b13a69f4b1c222b8f4a89451dc2148cb04a8cd0c45c2a87af51471774"
+  },
+  "cic-ids2017/Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv.parquet",
+    "sha256": "4d78cee297c27f1a9947b9384793e587a46c7a3ea89db199553dabddc9835d4a"
+  },
+  "cic-ids2017/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv.parquet": {
+    "url": "https://huggingface.co/datasets/bvsam/cic-ids-2017/resolve/main/traffic_labels/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv.parquet",
+    "sha256": "7c5876d52189fc01af54bad6cf23afe9f7fbc0e3ca6c3595920754f0c3ba8f66"
+  },
+  "unsw-nb15/UNSW_Flow.parquet": {
+    "url": "https://huggingface.co/datasets/rdpahalavan/UNSW-NB15/resolve/main/Network-Flows/UNSW_Flow.parquet",
+    "sha256": "8129db1cef95763a45072052af30a4c954af18b48abb6176f3d8ab732eb7d274"
+  }
+}

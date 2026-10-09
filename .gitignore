@@ -53,5 +53,6 @@ frontend/.env.local
 test.db
 *.sqlite
 
-# Research datasets (downloaded by hand; see research/scripts/prepare_data.py)
-research/data/
+# Research datasets (downloaded by research/scripts/prepare_data.py)
+research/data/*
+!research/data/manifest.json

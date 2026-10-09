@@ -79,49 +79,67 @@ def _derive_rates(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _clean_label(label: str) -> str:
-    label = re.sub(r"[^\x20-\x7e]", "-", str(label)).strip()
-    label = re.sub(r"\s*-+\s*", " - ", label)
-    return re.sub(r"\s+", " ", label)
+    # The Web Attack labels contain a broken non-ASCII dash ("Web Attack \x96 Brute Force").
+    label = re.sub(r"[^\x20-\x7e]", " ", str(label))
+    return re.sub(r"\s+", " ", label).strip()
 
 
 # ── CIC-IDS2017 ────────────────────────────────────────────────────────────────
 
-def load_cic_ids2017(root: Path | None = None) -> pd.DataFrame:
-    """Load the CICFlowMeter CSVs that include timestamps (GeneratedLabelledFlows)."""
-    root = root or DATA_DIR / "cic-ids2017"
-    by_name = {p.name: p for p in sorted(root.rglob("*.csv")) if p.name.split("-")[0] in CIC_DAYS}
-    files = sorted(by_name.values(), key=lambda p: p.name)
-    if not files:
-        raise FileNotFoundError(
-            f"No CIC-IDS2017 CSVs under {root}. Download it by hand, then run: python scripts/prepare_data.py"
+CIC_COLUMNS = [
+    "Source IP", "Source Port", "Destination IP", "Destination Port", "Protocol", "Timestamp",
+    "Flow Duration", "Total Fwd Packets", "Total Backward Packets", "Total Length of Fwd Packets",
+    "Total Length of Bwd Packets", "FIN Flag Count", "SYN Flag Count", "RST Flag Count",
+    "PSH Flag Count", "ACK Flag Count", "Label",
+]
+
+
+def _read_cic_file(path: Path) -> pd.DataFrame:
+    if path.suffix == ".parquet":
+        # Parquet mirror of the TrafficLabelling CSVs; timestamps are already UTC datetimes.
+        return pd.read_parquet(path, columns=CIC_COLUMNS)
+    raw = pd.read_csv(path, encoding="latin-1", low_memory=False, skipinitialspace=True)
+    raw.columns = [c.strip() for c in raw.columns]
+    if "Timestamp" not in raw.columns:
+        raise ValueError(
+            f"{path.name} has no Timestamp column. Use GeneratedLabelledFlows "
+            "(TrafficLabelling), not MachineLearningCVE: the temporal split needs time."
         )
+    raw["Timestamp"] = _parse_cic_timestamps(raw["Timestamp"])
+    return raw[CIC_COLUMNS]
+
+
+def load_cic_ids2017(root: Path | None = None) -> pd.DataFrame:
+    """Load the CICFlowMeter flows that include timestamps (TrafficLabelling), CSV or Parquet."""
+    root = root or DATA_DIR / "cic-ids2017"
+    by_day_file = {}
+    for p in sorted(root.rglob("*")):
+        if p.suffix in (".csv", ".parquet") and p.name.split("-")[0] in CIC_DAYS:
+            by_day_file.setdefault(p.name.split(".")[0], p)  # one copy per capture file
+    files = sorted(by_day_file.values(), key=lambda p: p.name)
+    if not files:
+        raise FileNotFoundError(f"No CIC-IDS2017 files under {root}. Run: python scripts/prepare_data.py")
     frames = []
     for path in files:
-        raw = pd.read_csv(path, encoding="latin-1", low_memory=False, skipinitialspace=True)
-        raw.columns = [c.strip() for c in raw.columns]
-        if "Timestamp" not in raw.columns:
-            raise ValueError(
-                f"{path.name} has no Timestamp column. Use GeneratedLabelledFlows "
-                "(TrafficLabelling), not MachineLearningCVE: the temporal split needs time."
-            )
-        raw = raw.dropna(subset=["Label"])
+        raw = _read_cic_file(path).dropna(subset=["Label"])
+        num = lambda c: pd.to_numeric(raw[c], errors="coerce").astype(float)  # noqa: E731
         df = pd.DataFrame({
-            "packet_count": raw["Total Fwd Packets"] + raw["Total Backward Packets"],
-            "byte_count": raw["Total Length of Fwd Packets"] + raw["Total Length of Bwd Packets"],
-            "duration_seconds": raw["Flow Duration"].clip(lower=0) / 1e6,
-            "tcp_syn_count": raw["SYN Flag Count"],
-            "tcp_fin_count": raw["FIN Flag Count"],
-            "tcp_rst_count": raw["RST Flag Count"],
-            "tcp_ack_count": raw["ACK Flag Count"],
-            "tcp_psh_count": raw["PSH Flag Count"],
-            "src_port": raw["Source Port"],
-            "dst_port": raw["Destination Port"],
+            "packet_count": num("Total Fwd Packets") + num("Total Backward Packets"),
+            "byte_count": num("Total Length of Fwd Packets") + num("Total Length of Bwd Packets"),
+            "duration_seconds": num("Flow Duration").clip(lower=0) / 1e6,
+            "tcp_syn_count": num("SYN Flag Count"),
+            "tcp_fin_count": num("FIN Flag Count"),
+            "tcp_rst_count": num("RST Flag Count"),
+            "tcp_ack_count": num("ACK Flag Count"),
+            "tcp_psh_count": num("PSH Flag Count"),
+            "src_port": num("Source Port"),
+            "dst_port": num("Destination Port"),
         })
         df = _derive_rates(df)
         df["src_ip"] = raw["Source IP"].astype(str)
         df["dst_ip"] = raw["Destination IP"].astype(str)
-        df["protocol"] = raw["Protocol"].map(_PROTO_NAMES).fillna("OTHER")
-        df["timestamp"] = _parse_cic_timestamps(raw["Timestamp"])
+        df["protocol"] = pd.to_numeric(raw["Protocol"], errors="coerce").map(_PROTO_NAMES).fillna("OTHER")
+        df["timestamp"] = pd.to_datetime(raw["Timestamp"])
         df["day"] = path.name.split("-")[0]
         df["attack"] = raw["Label"].map(_clean_label)
         df["y"] = (df["attack"] != BENIGN).astype(int)
@@ -159,22 +177,39 @@ def _to_port(s: pd.Series) -> pd.Series:
     return out.fillna(0)
 
 
+UNSW_PARQUET_RENAME = {
+    "source_ip": "srcip", "source_port": "sport", "destination_ip": "dstip",
+    "destination_port": "dsport", "protocol": "proto", "spkts": "Spkts", "dpkts": "Dpkts",
+    "stime": "Stime", "attack_label": "attack_cat", "binary_label": "Label",
+}
+UNSW_CATEGORIES = {
+    "exploits": "Exploits", "generic": "Generic", "fuzzers": "Fuzzers", "reconnaissance": "Reconnaissance",
+    "dos": "DoS", "analysis": "Analysis", "backdoor": "Backdoor", "backdoors": "Backdoor",
+    "shellcode": "Shellcode", "worms": "Worms",
+}
+
+
 def load_unsw_nb15(root: Path | None = None) -> pd.DataFrame:
-    """Load the four raw UNSW-NB15 CSVs (UNSW-NB15_1.csv ... UNSW-NB15_4.csv)."""
+    """Load UNSW-NB15: the four official CSVs, or the Parquet flow table (UNSW_Flow.parquet)."""
     root = root or DATA_DIR / "unsw-nb15"
-    files = sorted({p.name: p for p in root.rglob("UNSW-NB15_[1-4].csv")}.values(), key=lambda p: p.name)
-    if not files:
-        raise FileNotFoundError(
-            f"No UNSW-NB15 CSVs under {root}. Download it by hand, then run: python scripts/prepare_data.py"
+    csvs = sorted({p.name: p for p in root.rglob("UNSW-NB15_[1-4].csv")}.values(), key=lambda p: p.name)
+    parquet = sorted(root.rglob("UNSW_Flow.parquet"))
+    if csvs:
+        raw = pd.concat(
+            (pd.read_csv(p, header=None, names=UNSW_COLUMNS, encoding="latin-1", low_memory=False) for p in csvs),
+            ignore_index=True,
         )
-    raw = pd.concat(
-        (pd.read_csv(p, header=None, names=UNSW_COLUMNS, encoding="latin-1", low_memory=False) for p in files),
-        ignore_index=True,
-    )
+    elif parquet:
+        raw = pd.read_parquet(parquet[0], columns=list(UNSW_PARQUET_RENAME) + ["sbytes", "dbytes", "dur"])
+        raw = raw.rename(columns=UNSW_PARQUET_RENAME)
+        raw["attack_cat"] = raw["attack_cat"].astype(str).str.strip().str.lower().replace({"normal": ""})
+    else:
+        raise FileNotFoundError(f"No UNSW-NB15 files under {root}. Run: python scripts/prepare_data.py")
+    num = lambda c: pd.to_numeric(raw[c], errors="coerce").astype(float)  # noqa: E731
     df = pd.DataFrame({
-        "packet_count": raw["Spkts"] + raw["Dpkts"],
-        "byte_count": raw["sbytes"] + raw["dbytes"],
-        "duration_seconds": raw["dur"].clip(lower=0),
+        "packet_count": num("Spkts") + num("Dpkts"),
+        "byte_count": num("sbytes") + num("dbytes"),
+        "duration_seconds": num("dur").clip(lower=0),
         "src_port": _to_port(raw["sport"]),
         "dst_port": _to_port(raw["dsport"]),
     })
@@ -184,11 +219,12 @@ def load_unsw_nb15(root: Path | None = None) -> pd.DataFrame:
     df["src_ip"] = raw["srcip"].astype(str)
     df["dst_ip"] = raw["dstip"].astype(str)
     df["protocol"] = raw["proto"].astype(str).str.upper()
-    df["timestamp"] = pd.to_datetime(raw["Stime"], unit="s")
-    cat = raw["attack_cat"].fillna("").astype(str).str.strip().replace({"Backdoors": "Backdoor"})
-    df["y"] = raw["Label"].astype(int)
+    df["timestamp"] = pd.to_datetime(num("Stime"), unit="s")
+    cat = raw["attack_cat"].fillna("").astype(str).str.strip()
+    cat = cat.str.lower().map(UNSW_CATEGORIES).fillna(cat)
+    df["y"] = num("Label").astype(int)
     df["attack"] = np.where(df["y"] == 0, BENIGN, cat.where(cat != "", "Unknown"))
-    return df
+    return df.dropna(subset=["timestamp", "packet_count", "byte_count"])
 
 
 def split_unsw_nb15(data: pd.DataFrame, features: list[str], cut_quantile: float = 0.4,

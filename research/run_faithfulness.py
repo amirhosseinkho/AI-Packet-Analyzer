@@ -9,6 +9,7 @@ reference attributions in pa_research.explain and counts unsupported claims.
 Examples:
     python run_faithfulness.py --provider ollama --model llama3.2
     python run_faithfulness.py --provider openai --model gpt-4o-mini
+    python run_faithfulness.py --provider hf --model Qwen/Qwen2.5-1.5B-Instruct   # local, no API key
     python run_faithfulness.py --synthetic --provider mock      # pipeline check only
 """
 
@@ -46,6 +47,9 @@ def make_provider(name: str, model: str | None):
     if name == "openai":
         from app.llm.providers.openai_provider import OpenAIProvider
         return OpenAIProvider(model=model)
+    if name == "hf":
+        from pa_research.hf_provider import HuggingFaceProvider
+        return HuggingFaceProvider(model or "Qwen/Qwen2.5-1.5B-Instruct")
     raise ValueError(name)
 
 
@@ -92,7 +96,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--setting", choices=["cic"], default="cic")
     ap.add_argument("--synthetic", action="store_true")
-    ap.add_argument("--provider", choices=["mock", "ollama", "openai"], default="ollama")
+    ap.add_argument("--provider", choices=["mock", "ollama", "openai", "hf"], default="ollama")
     ap.add_argument("--model", default=None, help="LLM name, e.g. llama3.2 or gpt-4o-mini")
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--conditions", nargs="+", default=["deployed", "grounded"], choices=["deployed", "grounded"])
@@ -192,6 +196,7 @@ def main() -> None:
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     (out / "run.json").write_text(json.dumps({
         "started_utc": started.isoformat(), "args": vars(args), "split": split.describe(),
+        "llm": provider.name, "llm_device": getattr(provider, "device", "remote"),
         "system_prompt": _SYSTEM_PROMPT}, indent=2, default=str), encoding="utf-8")
     print("\n".join(lines))
     print(f"\nWrote {out}")

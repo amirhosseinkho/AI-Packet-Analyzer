@@ -1,0 +1,86 @@
+{
+  "setting": "cic",
+  "started_utc": "2026-10-09T19:11:04.084524+00:00",
+  "commit": "3dbd50d6233852bb81d6ad2389d27c743fd3a435",
+  "args": {
+    "setting": "cic",
+    "synthetic": false,
+    "models": [
+      "isolation_forest",
+      "autoencoder",
+      "ensemble",
+      "ocsvm",
+      "lof",
+      "zscore_max"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "fpr": 0.01,
+    "n_train": 20000,
+    "n_val": 20000,
+    "test_benign_cap": 100000,
+    "test_attack_cap": 5000,
+    "ae_epochs": 50,
+    "out": null
+  },
+  "split": {
+    "dataset": "CIC-IDS2017",
+    "features": [
+      "packet_count",
+      "byte_count",
+      "avg_packet_size",
+      "duration_seconds",
+      "packets_per_second",
+      "bytes_per_second",
+      "tcp_syn_count",
+      "tcp_fin_count",
+      "tcp_rst_count",
+      "tcp_ack_count",
+      "tcp_psh_count",
+      "src_port",
+      "dst_port"
+    ],
+    "n_train": 20000,
+    "n_val": 20000,
+    "n_test": 144193,
+    "test_attack_counts": {
+      "BENIGN": 100000,
+      "FTP-Patator": 5000,
+      "SSH-Patator": 5000,
+      "DoS slowloris": 5000,
+      "DoS Slowhttptest": 5000,
+      "DoS Hulk": 5000,
+      "DoS GoldenEye": 5000,
+      "PortScan": 5000,
+      "DDoS": 5000,
+      "Bot": 1966,
+      "Web Attack Brute Force": 1507,
+      "Web Attack XSS": 652,
+      "Infiltration": 36,
+      "Web Attack Sql Injection": 21,
+      "Heartbleed": 11
+    },
+    "train_time_range": [
+      "2017-07-03 11:55:58",
+      "2017-07-03 18:12:38"
+    ],
+    "val_time_range": [
+      "2017-07-03 18:12:38",
+      "2017-07-03 20:01:34"
+    ],
+    "test_time_range": [
+      "2017-07-04 11:54:00",
+      "2017-07-07 20:02:00"
+    ]
+  },
+  "python": "3.13.3",
+  "torch": "2.9.1+cpu",
+  "machine": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+  "cuda": false
+}
